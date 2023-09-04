@@ -1,0 +1,116 @@
+The ETH4K's I/O is broken up into three banks: A, B, and C. The pinout is shown below in \autoref{figure:pinout}. Each box next to a pin represents the pin's function. Multiple boxes indicate that the pin has multiple functions. Each GPIO pin has a number indicating the FPGA's pin number. Other functions are discussed in detail throughout this section.
+
+A special thing to note is that Bank C shares the same pin layout as the Raspberry Pi making many Raspberry Pi HATs compatible with the ETH4K. Always be sure to verify compatibility before connecting any device to the ETH4K.
+
+\vspace{6pt}
+
+% Pinout Figure
+\begin{figure}[hb]
+    \centering
+    \includegraphics[width=16cm]{pinout.png}
+    \caption{Pinout Diagram}
+    \label{figure:pinout}
+\end{figure}
+
+\newpage
+
+\subsection{LED Pins}
+There are four user-addressable LEDs controlled by the pins labeled LED[4:1]. They are connected to the FPGA as shown in \autoref{figure:led-schematic}. The LMV324A operational amplifier has a high input impedance ensuring that, in many cases, the LED pins can be used as normal GPIO without needing to consider the loading effects of the LED circuitry.
+
+% LED Schematic Figure
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=8.5cm]{led-schematic.png}
+    \caption{LED Schematic Diagram}
+    \label{figure:led-schematic}
+\end{figure}
+
+\subsection{Analog Input Pins} \label{section:analog-inputs}
+There are four analog inputs labeled A[3:0]. These pins are connected to the 12-bit ADC as shown in \autoref{figure:adc-schematic}. The FPGA is able to communicate with this ADC over an I$^2$C bus. The device has a 7-bit address of 1001000 (followed by a single R/$\overline{\mbox{W}}$ bit). For more information on bus communication, see the \href{https://www.ti.com/lit/gpn/ads1015}{\textit{ADS1015 Data Sheet}}. Also see \autoref{section:internal-connections} for information on how this device connects with the FPGA.
+
+% ADC Schematic Figure
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=8.5cm]{adc-schematic.png}
+    \caption{ADC Schematic Diagram}
+    \label{figure:adc-schematic}
+\end{figure}
+
+\newpage
+
+\subsection{Global Input Pins} \label{section:GBIN-pins}
+Pins labeled GBIN[7:0] indicate global inputs. These pins should be used for clock signals, reset signals, and other high-fanout nets. The iCE40HX4K has eight total global inputs, six of which are exposed to the user as GPIO. The other two are reserved for the 25MHz clock and reset button.
+
+\subsection{Cold Boot Select Pins} \label{section:CBSEL-pins}
+Pins labeled CBSEL[1:0] indicate Cold Boot selection pins. When the FPGA is configured in Cold Boot mode, these pins are used on boot-up to select which of the four possible bitstreams to program the device with. After configuration, these pins become normal GPIO.
+
+When the FPGA is not in Cold Boot mode, these pins behave as normal GPIO.
+
+\subsection{Internal Connections} \label{section:internal-connections}
+There are six on-board components that the FPGA can communicate with: the Ethernet controller, the ADC, the USB-UART bridge, the flash memory module, the 25MHz clock, and the reset button.
+
+The Ethernet controller (WIZnet W5500) communicates over a SPI bus with an additional reset pin and interrupt pin. The ADC (Texas Instruments ADS1015) communicates over an I$^2$C bus with an additional alert pin. The USB-UART bridge (FTDI FT2232H) communicates over a two-wire UART. The flash memory module (Winbond W25Q80DV) communicates over a four-wire SPI bus. Both the 25MHz clock and the reset button are connected to global inputs. \autoref{table:internal-connection-info} shows the connection information for these components.
+
+% Internal Connection Information Table
+\begin{table}[h]
+    % Column width scale factors (\hsize=) must all add up to 1
+    \begin{tabularx}{\textwidth}{
+        | >{\hsize=0.20\hsize\centering\arraybackslash}X 
+        | >{\hsize=0.15\hsize\centering\arraybackslash}X 
+        | >{\hsize=0.15\hsize\centering\arraybackslash}X 
+        | >{\hsize=0.15\hsize\centering\arraybackslash}X 
+        | >{\hsize=0.35\hsize}X |
+    }
+        \hline
+        \rowcolor{lightgray!50} 
+        \textbf{Component} &
+        \textbf{FPGA\linebreak{}Pin Number} &
+        \textbf{Function} &
+        \textbf{Direction} &
+        \textbf{Notes} \\
+        \hline
+        
+        \multirow{6}{*}{Ethernet Controller} & 42 & Reset & Output & Active low \\
+        \cline{2-5}
+        & 43 & Interrupt & Input & Active low \\
+        \cline{2-5}
+        & 44 & MOSI & Output & --- \\
+        \cline{2-5}
+        & 45 & MISO & Input & --- \\
+        \cline{2-5}
+        & 47 & SCK & Output & --- \\
+        \cline{2-5}
+        & 48 & CS & Output & Active low \\
+        \hline
+        
+        Reset Button & 49 & Reset & Input & Active low \\
+        \hline
+        
+        25MHz Clock & 52 & Clock & Input & --- \\
+        \hline
+        
+        \multirow{3}{*}{ADC} & 55 & Alert/Ready & Input & --- \\
+        \cline{2-5}
+        & 56 & SCL & Output & Open drain \\
+        \cline{2-5}
+        & 60 & SDA & Bidirectional & Open drain \\
+        \hline
+
+        \multirow{2}{*}{USB-UART Bridge} & 61 & TX & Output & --- \\
+        \cline{2-5}
+        & 62 & RX & Input & --- \\
+        \hline
+
+        \multirow{4}{*}{Flash Memory} & 67 & MOSI & Output & --- \\
+        \cline{2-5}
+        & 68 & MISO & Input & --- \\
+        \cline{2-5}
+        & 70 & SCK & Output & --- \\
+        \cline{2-5}
+        & 71 & CS & Output & Active low \\
+        \hline    
+    \end{tabularx}
+    \caption{Internal Connection Information}
+    \label{table:internal-connection-info}
+\end{table}
+\newpage

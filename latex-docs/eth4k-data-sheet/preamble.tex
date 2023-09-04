@@ -1,0 +1,44 @@
+% Document Setup
+\documentclass[letterpaper, twoside]{article}
+\usepackage[hmargin=1in]{geometry}
+\usepackage{parskip} % Removes indentation and adds space between paragraphs
+
+% Font Setup
+\usepackage[T1]{fontenc}
+\usepackage[scaled]{helvet}
+\renewcommand\familydefault{\sfdefault} 
+\usepackage[font=bf]{caption} % Bold captions
+
+% Image Setup
+\usepackage{graphicx} % Allows loading images
+\graphicspath{{assets/}}
+
+% Table Setup
+\usepackage{tabularx} % Allows for full-page tables
+\usepackage[table]{xcolor} % Allows coloring table cells
+\usepackage{multirow} % Improves table row layout
+\renewcommand\tabularxcolumn[1]{m{#1}} % Vertically center table cells
+
+% Hyper References Setup
+\usepackage{hyperref}
+\hypersetup{colorlinks, linkcolor=black, urlcolor=blue}
+\urlstyle{same}
+
+% Other Packages
+\usepackage{fancyhdr} % Gives fancy header/footer
+\usepackage{lastpage} % Gives the last page's number (used in footer)
+\usepackage{multicol} % Improves column layout
+
+
+
+% Header Setup
+\fancyhead{} % clear all header fields
+\renewcommand{\headrulewidth}{1.5pt}
+\fancyhead[OR,EL]{\Huge \textbf{ETH4K}}
+\setlength{\headheight}{30pt}
+
+% Footer Setup
+\fancyfoot{} % clear all footer fields
+\renewcommand{\footrulewidth}{1.5pt}
+\fancyfoot[OR,EL]{Page \thepage{} of \pageref{LastPage}}
+\fancyfoot[OL, ER]{\textcopyright{} \the\year{}, Theta Machines LLC.}

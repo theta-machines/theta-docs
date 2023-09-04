@@ -1,0 +1,61 @@
+% Preamble
+\input{preamble}
+
+\begin{document}
+    % Give pages fancy header/footer
+    \pagestyle{fancy}
+    
+    % Title Page
+    \input{special-pages/titlepage}
+
+    % Table of Contents
+    \tableofcontents
+    \newpage
+    
+    % Overview page
+    \input{special-pages/overview-page}
+
+    % Description 
+    \input{sections/detailed-description}
+
+    % Electrical Specification
+    \section{Electrical Specification} \label{section:electrical-specs}
+    \input{sections/electrical-specs}
+    
+    % Pin Descriptions
+    \section{Pin Descriptions}
+    \input{sections/pin-descriptions}
+
+    % Mechanical Specification
+    \section{Mechanical Specification}
+    Although not depicted in \autoref{figure:mechanical-drawing}, the screw terminal and button heights are 10.0mm and 4.3mm respectively (measured from the top surface of the PCB). 
+
+    All dimensions are in millimeters.
+    
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=14cm]{assets/mechanical.png}
+        \caption{Mechanical Specification}
+        \label{figure:mechanical-drawing}
+    \end{figure}
+    \newpage
+
+    % Begin Appendix
+    \appendix
+
+    % Supplemantal Documents
+    \section{Supplemental Documents}
+    \input{appendix/supplemental-docs}
+    
+    % List of Acronyms
+    \section{List of Acronyms \& Abbreviations}
+    \input{appendix/list-of-acronyms}
+
+    % Document Version History
+    \section{Document Version History}
+    \input{appendix/version-history}
+
+    \section{Suggest Changes}    
+    Have a suggestion? Found an error? Let us know by opening an issue on GitHub (\href{https://github.com/theta-machines/theta-docs/issues}{https://github.com/theta-\newline{}machines/theta-docs/issues}) or contacting us at \href{mailto:support@thetamachines.com}{support@thetamachines.com}.
+    
+\end{document}
