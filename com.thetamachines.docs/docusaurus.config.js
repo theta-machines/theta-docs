@@ -34,7 +34,7 @@ const config = {
           routeBasePath: "/",
           // GitHub repo URL
           editUrl:
-            "https://github.com/theta-machines/theta-docs",
+            "https://github.com/theta-machines/theta-docs/blob/main/com.thetamachines.docs",
         },
         blog: false,
         theme: {
