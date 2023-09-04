@@ -24,12 +24,21 @@ export default function Home() {
           </div>
           <div className="family-body">
             <div className="family-body-section">
+              <h2>Key Documents</h2>
+              <ul>
+                <li><a href="https://www.thetamachines.com/downloads/hardware/eth4k-data-sheet.pdf">Data Sheet</a></li>
+                <li><a href="https://www.thetamachines.com/downloads/hardware/eth4k-schematic.pdf">Schematic</a></li>
+                <li><a href="https://www.thetamachines.com/downloads/hardware/eth4k-bom.pdf">Bill of Materials</a></li>
+              </ul>
+            </div>
+            <div className="family-body-section">
               <h2>Guides</h2>
               <ul>
                 <li><a href="/hardware/disco-boards/eth4k/icecube2-guide">iCEcube2 Guide</a></li>
                 <li><a href="/hardware/disco-boards/eth4k/diamond-programmer-guide">Diamond Programmer Guide</a></li>
               </ul>
             </div>
+            <div className="family-body-section"></div>
           </div>
         </div>
       </div>
