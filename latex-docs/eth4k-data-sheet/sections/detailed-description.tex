@@ -5,6 +5,9 @@
     \caption{Block Diagram}
 \end{figure}
 
+\subsection{FPGA Device Summary} \label{section:fpga-device-summary}
+The ETH4K is built around the Lattice Semiconductor iCE40HX4K. This device features 3,520 logic cells, 80k-bits of embedded RAM, and 2 PLLs. For more information on this device's specification, see the official \href{https://www.latticesemi.com/view_document?document_id=49312}{\textit{iCE40 LP/HX Family Data Sheet}}. 
+
 \subsection{FPGA Configuration} \label{section:fpga-config}
 The FPGA can be configured using Lattice Semiconductor's iCEcube2 Design Software and Diamond Programmer. iCEcube2 is used to generate the bitstreams, while Diamond Programmer is used to flash the bitstreams on to the FPGA. For guides on using these tools, see both the \href{https://docs.thetamachines.com/hardware/disco-boards/eth4k/icecube2-guide}{\textit{iCEcube2 Guide}} and the \href{https://docs.thetamachines.com/hardware/disco-boards/eth4k/diamond-programmer-guide}{\textit{Diamond Programmer Guide}} available at \url{https://docs.thetamachines.com}.
 
@@ -13,12 +16,12 @@ The FTDI FT2232H USB Bridge is used for both programming the FPGA and communicat
 
 \textbf{Caution:} Modifying the FT2232H's firmware can permanently brick the ETH4K.
 
+\newpage
+
 \subsection{Ethernet Controller}
 The board integrates the WIZnet W5500 Ethernet controller, enabling network communication without the need to implement TCP/IP logic within the FPGA. This simplifies and shrinks designs while still offering robust communication. The W5500 has an embedded 10BASE-T/100BASE-TX PHY and supports TCP, UDP, ICMP, IPv4, ARP, IGMP, and PPPoE.
 
 The W5500 communicates with the FPGA over a SPI bus with an additional reset pin and interrupt pin (see \autoref{section:internal-connections} for connection information).
-
-\newpage
 
 \subsection{Analog to Digital Converter}
 The ETH4K integrates the Texas Instruments ADS1015. This 12-bit ADC has four analog inputs (A[3:0]). It accepts signals between 0V and 3.3V and has a programmable sampling rate from 128 to 3,300 samples per second.
