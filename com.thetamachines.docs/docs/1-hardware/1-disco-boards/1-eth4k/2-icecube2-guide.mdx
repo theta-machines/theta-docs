@@ -25,14 +25,22 @@ my-project/
 The `icecube2` directory will be created in the next section.
 :::
 
+## Download the Project (Optional)
+This guide uses a project called `my-project` which contains a single source file (`my-project/src/top.sv`) that makes an LED blink once per second.
+
+If you would like to follow this guide verbatim, you can download and extract the [eth4k-demo-guide.zip](https://www.thetamachines.com/downloads/hardware/eth4k-demo-guide.zip) file.
+
 ## Creating a New Project
 1. Launch iCEcube2.
 2. In the top left corner, click `File > New Project`.
-3. Set `Device Family` to `iCE40`.
-4. Set `Device` to `HX4K`.
-5. Set `Device Package` to `TQ144`.
-6. Under `Junction Temperature`, set `Range` to `Industrial`.
-7. Set all four options under `IOBank Voltage(V)` to `3.3`
+3. Set `Project Name` to something like `icecube2`.
+4. Set `Project Directory` to your project's root directory.
+5. Set `Device Family` to `iCE40`.
+6. Set `Device` to `HX4K`.
+7. Set `Device Package` to `TQ144`.
+8. Under `Junction Temperature`, set `Range` to `Industrial`.
+9. Set all four options under `IOBank Voltage(V)` to `3.3`
+10. Click `Next`.
 
 <img
   src={require("./img/icecube2-new-project.png").default}
@@ -42,7 +50,7 @@ The `icecube2` directory will be created in the next section.
 
 <br/>
 
-8. Add the files from your `src` directory using the `>>` button. You only need to select the files that will be used for synthesis.
+11. Add the files from your `src` directory using the `>>` button. You only need to select the files that will be used for synthesis.
 
 <img
   src={require("./img/icecube2-add-files.png").default}
@@ -52,7 +60,7 @@ The `icecube2` directory will be created in the next section.
 
 <br/>
 
-9. Click `Finish`.
+12. Click `Finish`.
 
 ## Synthesizing Your Design
 
@@ -60,6 +68,7 @@ The `icecube2` directory will be created in the next section.
 2. Review the output for any warnings and errors. If all goes well, the output will read `Synthesis succeeded` near the end. 
 3. Double-click <code><img src={require("./img/icecube2-action-button.png").default}/> Import P&R Input Files</code>.
 4. Open the `Pins Constraints Editor` (<img src={require("./img/icecube2-pin-constraint-button.png").default} width="20px"/>) and enter the pin numbers.
+    * This editor can also be opened by clicking `Tool > Pins Constraints Editor`.
 
 <img
   src={require("./img/icecube2-pin-constraint-table.png").default}
@@ -79,3 +88,6 @@ The `icecube2` directory will be created in the next section.
 :::tip
 By default, the bitmap files are stored in `my-project/icecube2/icecube2_Implmnt/sbt/outputs/bitmap/`.
 :::
+
+## Next Steps
+Now that you have successfully generated a bitmap, you need to flash this bitmap onto the FPGA. Our [*Diamond Programmer Guide*](/hardware/disco-boards/eth4k/diamond-programmer-guide) will walk you through this process.
