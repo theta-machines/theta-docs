@@ -26,6 +26,7 @@ export default function Home() {
             <div className="family-body-section">
               <h2>Key Documents</h2>
               <ul>
+                <li><a href="https://www.thetamachines.com/downloads/hardware/eth4k-pinout.png">Pinout Diagram</a></li>
                 <li><a href="https://www.thetamachines.com/downloads/hardware/eth4k-data-sheet.pdf">Data Sheet</a></li>
                 <li><a href="https://www.thetamachines.com/downloads/hardware/eth4k-schematic.pdf">Schematic</a></li>
                 <li><a href="https://www.thetamachines.com/downloads/hardware/eth4k-bom.pdf">Bill of Materials</a></li>
