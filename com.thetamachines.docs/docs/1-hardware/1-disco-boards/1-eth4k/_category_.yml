@@ -1,4 +1,4 @@
 label: "ETH4K"
 link: 
-  type: "generated-index"
-  slug: "/hardware/disco-boards/eth4k"
+  type: "doc"
+  id: "hardware/disco-boards/eth4k/index"

@@ -1,4 +1,4 @@
 label: "Disco Boards"
 link: 
-  type: "generated-index"
-  slug: "/hardware/disco-boards"
+  type: "doc"
+  id: "hardware/disco-boards/index"
