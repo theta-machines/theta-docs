@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkcom_thetamachines_docs=self.webpackChunkcom_thetamachines_docs||[]).push([[736],{2615:a=>{a.exports=JSON.parse('{"title":"Disco Boards","slug":"/hardware/disco-boards","permalink":"/hardware/disco-boards","navigation":{"next":{"title":"ETH4K","permalink":"/hardware/disco-boards/eth4k"}}}')}}]);

@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkcom_thetamachines_docs=self.webpackChunkcom_thetamachines_docs||[]).push([[246],{3769:e=>{e.exports=JSON.parse('{"name":"docusaurus-plugin-content-docs","id":"default"}')}}]);
