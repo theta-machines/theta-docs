@@ -1,0 +1,15 @@
+---
+title: "RTMC Overview"
+slug: "/architecture/rtmc"
+---
+
+import RTMCSvg from './img/rtmc.svg';
+
+RTMC is a unified motion control architecture capable of driving numerically controlled machines such as CNCs and robot arms. The architecture has three layers: the [interface](/architecture/rtmc/interface), the [motion planner](/architecture/rtmc/motion-planner), and the [controller](/architecture/rtmc/controller). 
+
+The interface, typically a GUI, serves as the input point for machine control. The motion planner takes this input, processes it, and sends control signals to the controller. In the reverse direction, the controller sends realtime data back to the motion planner. The motion planner uses this data for planning and sends updates to the interface.
+
+<RTMCSvg className="img-center"/>
+<br/>
+
+RTMC spans two timing domains: *soft-realtime* and *hard-realtime*. Both the interface and the motion planner operate in *soft-realtime*, meaning commands are still executed in realtime, but unpredictable latencies do not lead to system failure. *Hard-realtime* tasks, such as pulse generation, are moved to dedicated hardware. This means virtually any computer can be used without a realtime operating system.
