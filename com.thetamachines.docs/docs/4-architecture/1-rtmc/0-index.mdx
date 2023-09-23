@@ -8,7 +8,7 @@ import RTMCSvg from './img/rtmc.svg';
 ## Overview
 RTMC stands for *Real-Time Motion Control*. It is a model for developing unified motion control standards around numerically controlled machines. This model is based on one key observation: all numerically controlled machines use very similar hardware. As such, this model was designed to facilitate the reuse of existing applications and standards when developing new motion control solutions.
 
-RTMC has three layers: the [interface](/architecture/rtmc/interface), the [motion planner](/architecture/rtmc/motion-planner), and the [controller](/architecture/rtmc/controller). The interface serves as the input point for machine control. The motion planner takes this input, processes it, and sends instructions to the controller. In the reverse direction, the controller sends real-time data back to the motion planner. The motion planner uses this data for planning and sends updates to the interface.
+RTMC has three layers: the *interface*, the *motion planner*, and the *controller*. The interface serves as the input point for machine control. The motion planner takes this input, processes it, and sends instructions to the controller. In the reverse direction, the controller sends real-time data back to the motion planner. The motion planner uses this data for planning and sends updates to the interface.
 
 <RTMCSvg className="img-center"/>
 <br/>
