@@ -1,15 +1,31 @@
 ---
-title: "RTMC Overview"
+title: "The RTMC Model"
 slug: "/architecture/rtmc"
 ---
 
 import RTMCSvg from './img/rtmc.svg';
 
-RTMC is a unified motion control architecture capable of driving numerically controlled machines such as CNCs and robot arms. The architecture has three layers: the [interface](/architecture/rtmc/interface), the [motion planner](/architecture/rtmc/motion-planner), and the [controller](/architecture/rtmc/controller). 
+## Overview
+RTMC stands for *Real-Time Motion Control*. It is a model for developing unified motion control standards around numerically controlled machines. This model is based on one key observation: all numerically controlled machines use very similar hardware. As such, this model was designed to facilitate the reuse of existing applications and standards when developing new motion control solutions.
 
-The interface, typically a GUI, serves as the input point for machine control. The motion planner takes this input, processes it, and sends control signals to the controller. In the reverse direction, the controller sends realtime data back to the motion planner. The motion planner uses this data for planning and sends updates to the interface.
+RTMC has three layers: the [interface](/architecture/rtmc/interface), the [motion planner](/architecture/rtmc/motion-planner), and the [controller](/architecture/rtmc/controller). The interface serves as the input point for machine control. The motion planner takes this input, processes it, and sends instructions to the controller. In the reverse direction, the controller sends real-time data back to the motion planner. The motion planner uses this data for planning and sends updates to the interface.
 
 <RTMCSvg className="img-center"/>
 <br/>
 
-RTMC spans two timing domains: *soft-realtime* and *hard-realtime*. Both the interface and the motion planner operate in *soft-realtime*, meaning commands are still executed in realtime, but unpredictable latencies do not lead to system failure. *Hard-realtime* tasks, such as pulse generation, are moved to dedicated hardware. This means virtually any computer can be used without a realtime operating system.
+RTMC spans two timing domains: *soft real-time* and *hard real-time*. Both the interface and the motion planner operate in soft real-time, meaning commands are still executed in real-time, but unpredictable latencies do not lead to system failure. Hard real-time tasks, such as pulse generation, are moved to dedicated hardware. This means virtually any computer can be used without a real-time operating system.
+
+## Interface
+The interface is a program that provides input to control the machine. Since the interface is decoupled from the motion planning software, it can take many forms. Typically, it will be a graphical user interface (GUI), but it can also be a command line interface (CLI) or any other program that communicates with the motion planner.
+
+The interface layer is intentionally left loosely defined. This is because interfaces will vary dramatically from one application to another. For example, the interface for a CNC lathe will look different than for a CNC mill. The key requirement when developing an interface is to keep it decoupled from the motion planner. Separating these two layers ensures flexibility for designing application-specific interfaces. 
+
+## Motion Planner
+The motion planner is a program that receives input from the interface, processes it, and sends instructions to the controller. It is responsible for interpreting high-level protocols such as g-code and performing all trajectory planning. Keeping the motion planner in soft real-time allows virtually any computer to handle computationally expensive tasks such as modeling kinematics. The motion planner takes this processed data and queues instructions for the controller.
+
+The motion planner is decoupled from both the interface and the controller. Separating these layers allows reuse of existing designs. For example, two robots might use very similar hardware and be controlled through the same interface. In a case like this, the designer would only need to consider changes to the motion planning layer when designing their solution. 
+
+## Controller
+Developing controllers with an open instruction set architecture (ISA) allows designers to rapidly develop new solutions without needing to design and implement an entire ISA from scratch. Since all numerically controlled machines use similar hardware, a single ISA can be used to control many types of machines. This facilitates the reuse of existing applications and standards.
+
+The controller's responsibility is to process instructions queued by the motion planner. These instructions are responsible for changing axis positions, updating motor velocities, setting configuration parameters, etc. In addition, all hard real-time tasks like pulse generation, PID control, limit switch conditions, etc. must be implemented by the controller. 
