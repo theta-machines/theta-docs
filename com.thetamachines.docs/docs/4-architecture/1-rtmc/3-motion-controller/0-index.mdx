@@ -1,0 +1,23 @@
+---
+title: "Motion Controller"
+slug: "/architecture/rtmc/motion-controller"
+---
+
+:::info
+This section is incomplete.
+:::
+
+## T0 ISA
+
+### Instruction Set
+* `setpos` instructions &ndash; Move an axis to a given position over one update period
+    * Ex: `setpos x, 100`
+
+
+* `setparam` instructions &ndash; Set non-volatile parameter values
+    * Ex: `setparam T_on, 500`
+
+
+* The `update` instruction &ndash; Tells the T0 Core to proceed in the next update period.
+    * Ensures that the core knows when to stop processing `setpos` and `setparam` instructions for the current update period.
+    * Can be used to pause a program (just stop sending `update` instructions).

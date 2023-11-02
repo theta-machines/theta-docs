@@ -1,0 +1,4 @@
+label: "Motion Controller"
+link: 
+  type: "doc"
+  id: "architecture/rtmc/motion-controller/index"
