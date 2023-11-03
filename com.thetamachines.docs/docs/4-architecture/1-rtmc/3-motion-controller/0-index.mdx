@@ -3,21 +3,12 @@ title: "Motion Controller"
 slug: "/architecture/rtmc/motion-controller"
 ---
 
-:::info
-This section is incomplete.
-:::
+## Overview
+The motion controller is the hardware that communicates with the trajectory planning software. The motion controller's responsibility is to process instructions queued by the trajectory planner and generate the electrical signals needed to control a machine. In addition, the motion controller handles other hard real-time tasks like PID control and handling limit switch conditions Since all numerically controlled machines use similar hardware, a single motion control architecture can be used to control many types of machines.
 
-## T0 ISA
+The full motion control device is called an *RTMC card*. RTMC cards are circuit boards that combine an *RTMC core* with necessary memory and I/O devices. This relationship is similar to that of a *graphics card* and a *graphics processing unit*.
 
-### Instruction Set
-* `setpos` instructions &ndash; Move an axis to a given position over one update period
-    * Ex: `setpos x, 100`
+RTMC cores are defined by an instruction set architecture (ISA). This ISA is an abstract model of the core, and serves as the interface between the hardware device and software. 
 
-
-* `setparam` instructions &ndash; Set non-volatile parameter values
-    * Ex: `setparam T_on, 500`
-
-
-* The `update` instruction &ndash; Tells the T0 Core to proceed in the next update period.
-    * Ensures that the core knows when to stop processing `setpos` and `setparam` instructions for the current update period.
-    * Can be used to pause a program (just stop sending `update` instructions).
+## Architectures
+Currently, there is one RTMC core architecture: the [*T0 ISA*](/architecture/rtmc/motion-controller/t0-isa). This architecture is for research and development purposes. It is not intended to define a fully functional machine controller.

@@ -1,0 +1,123 @@
+---
+title: "T0 ISA"
+---
+
+import T0BlockDiagram from "./draw.io/t0-block-diagram.svg";
+import T0InstructionFormats from "./draw.io/t0-instruction-formats.svg";
+import T0InstructionMnemonics from "./draw.io/t0-instruction-mnemonics.svg";
+import StepSignal from "./draw.io/step-signal.svg";
+
+:::info
+The T0 ISA is for research and development. It is not intended to define a fully functional machine controller.
+:::
+
+## Overview
+The T0 instruction set architecture (ISA) is an abstract model of a T0 core. The goal of the T0 core is to generate step and direction signals for controlling stepper motors. Instructions are queued in memory and executed one-by-one.
+
+The core performs its operations once per *update period*. This update period is user-configurable, and it limits how frequently a new *target position* can be set.
+
+<T0BlockDiagram className="img-center"/>
+<br/>
+
+The core is controlled by setting internal register values to a target position. The core then determines how many step pulses to generate in a single update period to reach this position.
+
+## Units Used in This Document
+* *Time* has a unit of *clock cycles*. For example, if a clock period is 40ns, then "25,000,000 clock cycles" equals 1s. 
+
+* *Position* has a unit of *steps*. For example if a stepper motor moves 1.8&deg; per step, then "200 steps" equals 360&deg;. Similarly, if a linear actuator is driven with a resolution of 0.1mm per step, then "200 steps" equals 20mm.
+
+* *Speed and velocity* both have a unit of *steps per clock cycle*. Typically, as discussed below, they are described in terms of *steps per update period*, where an update period is a user-defined number of clock cycles.
+
+## Instruction Formats
+There are two types of instructions: *set-type* and *control-type*. Set-type instructions set internal register values. Control-type instructions control the way data is processed. These two instruction types adhere to the following 8-bit formats, where set-type instructions are followed by a 32-bit *payload*. For set-type instructions, The register at the *destination* address is set to the payload value.
+
+<T0InstructionFormats className="img-center"/>
+<br/>
+
+## Instruction Mnemonics
+Rather than dealing with machine code directly, mnemonics can be used to form a simple *T0 assembly*. This minimalistic assembly consists of three instructions:
+* `update` &ndash; Instructs the core to stop fetching instructions until the next update period
+* `setpos` &ndash; Sets the target position which should be reached at the end of the next update period
+* `setparam` &ndash; Sets a global parameter value
+
+These instruction's opcodes and function codes are shown below.
+
+<T0InstructionMnemonics className="img-center"/>
+<br/>
+
+### Usage of `setpos`
+The T0 ISA defines three separate axes: `x`, `y`, and `z`. These axes correspond to the destination addresses `0x00`, `0x01`, and `0x02` respectively. 
+
+The opcode, function code, and destination address are all encoded in a single byte (see [Instruction Formats](#instruction-formats)). The following four bytes define the payload, a 32-bit signed integer representing the target position in steps. For example, if the x-axis stepper motor has 360 steps per revolution (1&deg; per step), and you wanted to set the position to 90&deg;, the instruction would be `setpos x 90` and its machine code equivalent (in hexadecimal) would be `50 00 00 00 5A`.
+
+The examples below are written in T0 assembly with their machine code equivalent commented to the right in hexadecimal.
+
+```assembly showLineNumbers
+setpos x 100    # 50 00 00 00 64
+setpos y 250    # 51 00 00 00 fa
+setpos z 97     # 52 00 00 00 61
+```
+
+### Usage of `setparam`
+There are four global parameters: `t_up`, `x_t_on`, `y_t_on`, and `z_t_on`. These parameter mnemonics correspond to the destination addresses `0x00`, `0x01`, `0x02`, and `0x03` respectively.
+
+The meaning of these parameters can best be understood by examining the following diagram of a step signal. There is a consistent time, `t_on`, in which the signal is HIGH. This parameter is unique for each axis (hints `x_t_on`, `y_t_on`, and `z_t_on`). 
+
+The update period, `t_up`, is the total duration of this signal. In the example below, there are three step pulses, so the axis's speed can be understood as "3 steps per update period". The speed can change once per update period. 
+
+<StepSignal className="img-center" />
+<br/>
+
+These parameter's values are all measured in clock cycles. For example, setting `t_up` to 250,000 means that one update period is 250,000 clock cycles.
+
+When setting a parameter value, the first byte encodes the opcode, function code, and destination address (see [Instruction Formats](#instruction-formats)). The following four bytes define the payload, a 32-bit unsigned integer representing the parameter's new value. 
+
+The examples below are written in T0 assembly with their machine code equivalent commented to the right in hexadecimal.
+
+```assembly showLineNumbers
+setparam t_up 250000    # 60 00 03 d0 90
+setparam x_t_on 100     # 61 00 00 00 64
+setparam y_t_on 250     # 62 00 00 00 fa
+setparam z_t_on 150     # 63 00 00 00 96
+```
+
+## Example Program
+:::info
+Whenever setting global parameters, there must be an `update` instruction before any subsequent `setpos` instructions. This is shown in line 6 of the example program below.
+:::
+
+The following example sets the core's global parameters then begins to move the three axes.
+
+Each line must contain zero or one instructions (that is, the full instruction must be typed on a single line). Comments begin with the `#` symbol. In the example program below, the line's machine code equivalent is listed as a comment to the right in hexadecimal. 
+
+```assembly showLineNumbers
+# Set global parameters
+setparam t_up 250000    # 60 00 03 d0 90
+setparam x_t_on 100     # 61 00 00 00 64
+setparam y_t_on 250     # 62 00 00 00 fa
+setparam z_t_on 150     # 63 00 00 00 96
+update                  # 00
+
+# Motion
+setpos x 0              # 50 00 00 00 00
+setpos y 0              # 51 00 00 00 00
+setpos z 0              # 52 00 00 00 00
+update                  # 00
+
+setpos x 1              # 50 00 00 00 01
+setpos y 1              # 51 00 00 00 01
+setpos z 1              # 52 00 00 00 01
+update                  # 00
+
+setpos x 2              # 50 00 00 00 02
+setpos y 2              # 51 00 00 00 02
+setpos z 2              # 52 00 00 00 02
+update                  # 00
+
+setpos x 3              # 50 00 00 00 03
+setpos y 3              # 51 00 00 00 03
+setpos z 3              # 52 00 00 00 03
+update                  # 00
+```
+
+This program moves all axes to a position of 0 steps, then increases their position by one step each update period. The program stops once all axes have been given a target position of 3 steps.

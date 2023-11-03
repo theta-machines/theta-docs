@@ -12,6 +12,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# draw.io
+*.drawio*.bkp
+*.drawio*.dtmp
+
 # LaTeX
 .temp/
 latex-docs/*/output
