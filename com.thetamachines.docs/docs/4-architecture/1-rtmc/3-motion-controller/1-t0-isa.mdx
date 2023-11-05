@@ -8,7 +8,7 @@ import T0InstructionMnemonics from "./draw.io/t0-instruction-mnemonics.svg";
 import StepSignal from "./draw.io/step-signal.svg";
 
 :::info
-The T0 ISA is for research and development. It is not intended to define a fully functional machine controller.
+The T0 ISA is for research and development. It is not intended to define a fully functional motion controller.
 :::
 
 ## Overview
@@ -83,7 +83,9 @@ setparam z_t_on 150     # 63 00 00 00 96
 
 ## Example Program
 :::info
-Whenever setting global parameters, there must be an `update` instruction before any subsequent `setpos` instructions. This is shown in line 6 of the example program below.
+Global parameters should always be set within their own update period. This allows the core enough time to read each `setparam` instruction before executing other instructions that might be dependent on these values. This illustrated in line 6 of the example program below.
+
+Never include both `setparam` and `setpos` instructions within the same update period.
 :::
 
 The following example sets the core's global parameters then begins to move the three axes.
@@ -99,11 +101,6 @@ setparam z_t_on 150     # 63 00 00 00 96
 update                  # 00
 
 # Motion
-setpos x 0              # 50 00 00 00 00
-setpos y 0              # 51 00 00 00 00
-setpos z 0              # 52 00 00 00 00
-update                  # 00
-
 setpos x 1              # 50 00 00 00 01
 setpos y 1              # 51 00 00 00 01
 setpos z 1              # 52 00 00 00 01
@@ -120,4 +117,4 @@ setpos z 3              # 52 00 00 00 03
 update                  # 00
 ```
 
-This program moves all axes to a position of 0 steps, then increases their position by one step each update period. The program stops once all axes have been given a target position of 3 steps.
+This program increases the position of each axis by one step every update period. The program stops once all axes have been given a target position of 3 steps.
