@@ -3,8 +3,6 @@ title: "T0 ISA"
 ---
 
 import T0BlockDiagram from "./draw.io/t0-block-diagram.svg";
-import T0InstructionFormats from "./draw.io/t0-instruction-formats.svg";
-import T0InstructionMnemonics from "./draw.io/t0-instruction-mnemonics.svg";
 import StepSignal from "./draw.io/step-signal.svg";
 
 :::info
@@ -31,8 +29,34 @@ The core is controlled by setting internal register values to a target position.
 ## Instruction Formats
 There are two types of instructions: *set-type* and *control-type*. Set-type instructions set internal register values. Control-type instructions control the way data is processed. These two instruction types adhere to the following 8-bit formats, where set-type instructions are followed by a 32-bit *payload*. For set-type instructions, The register at the *destination* address is set to the payload value.
 
-<T0InstructionFormats className="img-center"/>
-<br/>
+<table style={{display: "table", width: "100%", textAlign: "center"}}>
+  <thead>
+    <tr>
+      <th></th>
+      <th>7</th>
+      <th>6</th>
+      <th>5</th>
+      <th>4</th>
+      <th>3</th>
+      <th>2</th>
+      <th>1</th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <td><b>control</b></td>
+        <td colspan="2">opcode</td>
+        <td colspan="6">0x000</td>
+    </tr>
+    <tr>
+        <td><b>set</b></td>
+        <td colspan="2">opcode</td>
+        <td colspan="2">funct</td>
+        <td colspan="4">destination</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Instruction Mnemonics
 Rather than dealing with machine code directly, mnemonics can be used to form a simple *T0 assembly*. This minimalistic assembly consists of three instructions:
@@ -42,8 +66,36 @@ Rather than dealing with machine code directly, mnemonics can be used to form a 
 
 These instruction's opcodes and function codes are shown below.
 
-<T0InstructionMnemonics className="img-center"/>
-<br/>
+<table style={{display: "table", width: "100%", textAlign: "center"}}>
+    <thead>
+        <tr>
+            <th></th>
+            <th>format</th>
+            <th>opcode</th>
+            <th>funct</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><b>update</b></td>
+            <td>control</td>
+            <td>00</td>
+            <td>&mdash;</td>
+        </tr>
+        <tr>
+            <td><b>setpos</b></td>
+            <td>set</td>
+            <td>01</td>
+            <td>01</td>
+        </tr>
+        <tr>
+            <td><b>setparam</b></td>
+            <td>set</td>
+            <td>01</td>
+            <td>10</td>
+        </tr>
+    </tbody>
+</table>
 
 ### Usage of `setpos`
 The T0 ISA defines three separate axes: `x`, `y`, and `z`. These axes correspond to the destination addresses `0x00`, `0x01`, and `0x02` respectively. 
