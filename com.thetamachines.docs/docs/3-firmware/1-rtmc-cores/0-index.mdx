@@ -1,0 +1,8 @@
+---
+title: "RTMC Cores"
+slug: "/firmware/rtmc-cores"
+---
+
+RTMC cores are the processing elements used to create a [motion controller](/architecture/rtmc/motion-controller). These motion controllers, called *RTMC cards*, communicate with trajectory planning software and generate the electrical signals needed to control a machine. RTMC cores are responsible for handling hard real-time tasks such as pulse generation, PID control, handling limit switch conditions, etc. The relationship between an *RTMC card* and an *RTMC core* is similar to that of a *graphics card* and a *graphics processing unit*.
+
+Currently, there is one core available for research and development: the [T0 Core](/firmware/rtmc-cores/t0-core). The T0 Core is an implementation of the [T0 ISA](/architecture/rtmc/motion-controller/t0-isa). 

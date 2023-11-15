@@ -1,0 +1,361 @@
+---
+title: "T0 Core"
+---
+
+:::info
+This document assumes the reader has a firm understanding of the [T0 ISA](/architecture/rtmc/motion-controller/t0-isa).
+:::
+
+## 1. Overview
+This document covers Theta Machine's implementation of the [T0 ISA](/architecture/rtmc/motion-controller/t0-isa). This implementation is independent of any target device, meaning it can be ported to any platform as long as a compatible memory controller is written. The SystemVerilog files are [available on GitHub](https://github.com/theta-machines/t0-core). To use the design in a larger work, simply instantiate the `t0_core` module located in the `src/` directory. 
+
+The examples and diagrams in this document should aid in the understanding of the RTL models. Best efforts have been made to ensure accuracy between the schematics depicted here and the hardware synthesized from the source files. That being said, exact behavior can only be understood by studying the RTL models themselves. 
+
+
+
+### 1.1. Simulating Models
+The test benches (located in the `sim/` directory) are written in SystemVerilog and are tool-independent. There are, however, `.do` files included which tell ModelSim how to compile and run the source files. A test bench can be run within ModelSim using the `do <filename>` command. Each test bench also has an associated `wave.do` file that tells ModelSim which signals to display in the wave window.
+
+
+
+### 1.2. Assembling Machine Code
+Also included in the GitHub repository is a python script named `assembler.py`. This quick-and-dirty assembler creates a binary file from a [T0 assembly](/architecture/rtmc/motion-controller/t0-isa#instruction-mnemonics) file. The assembler can be run with the following command: 
+
+```
+python assembler.py <input_file> [-o <output_file>]
+```
+
+
+
+## 2. Conventions and Terminology
+*Scalars* are 1-bit wide signals. A *vector* is a group of bits within a signal. For example, an integer is a 32-bit vector. A *bus* is a group of signals. Since most circuits only need certain signals from a bus, buses are often broken up into scalars/vectors at certain points within the design. Both scalars and vectors are drawn as a thin line, while buses are drawn as a thick line. 
+
+Throughout the figures in this document, sequential logic circuits are indicated with a small triangle at the top of the symbol. Symbols without this triangle imply combinational logic. To keep the diagrams from becoming crowded, update and reset signals are omitted.
+
+<div className="img-padding" style={{
+    maxWidth: "400px"
+}}>
+    <img src={require("./img/clock-symbol.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 1:</b> Symbols for sequential and combinational logic</p>
+</div>
+<br/>
+
+Combinational arithmetic circuits use the traditional ALU symbol with the operator drawn in the middle. Arithmetic circuits accept vector inputs and output vector values. Combinational comparison circuits are depicted as a small square with the comparison operator drawn in the middle. Comparison circuits accept vector inputs and output a single bit (`1` when the condition is true, `0` otherwise). Both arithmetic and comparison circuits are often dependent on the order of their inputs (e.g., <i>A &ndash; B &ne; B &ndash; A</i>). The input order is stressed in Figure 2 below.
+
+<div className="img-padding" style={{
+    maxWidth: "450px"
+}}>
+    <img src={require("./img/arithmetic-symbols.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 2:</b> Arithmetic and comparison symbols</p>
+</div>
+<br/>
+
+While a traditional processor organizes registers into a *register file*, the T0 Core organizes them into *register tables*. The main difference is that register tables can have an arbitrary number of *columns* allowing for data to be thought of in a tabular form. Data can also be accessed in ways unconventional to a register file. The new name is meant to highlight these differences. Specifics of the individual register tables are discussed in later sections.
+
+
+
+## 3. High-Level Design
+It's important to understand the design at a high level before delving into the function of any particular unit. This section does not give a detailed description of any one unit's function, but rather describes how each unit interacts to form the high-level design. The T0 Core's design hierarchy is shown below for reference.
+
+```
+t0_core
+├── control_unit
+│   ├── fetch_unit
+│   ├── decoder
+│   ├── gp_table
+│   └── update_generator
+│
+└── datapath
+    ├── axis_counter
+    ├── cl_table
+    ├── esu
+    │   └── divider
+    ├── solution_table
+    └── pgu[0:2]
+```
+
+### 3.1. Datapath
+The core's Datapath (shown in Figure 1) has two register tables: the *CL Table* and the *Solution Table*. The CL Table implements the "Control Loop", telling the *Equation Solving Unit* (ESU) what velocity to use in its calculations. The Solution Table stores the resulting solutions. The *Pulse Generation Units* (PGUs) use the values stored in the Solution Table to generate step/direction pulses. The *Axis Counter's* job is to count though the axis addresses, ensuring that calculations are performed for each axis. 
+
+<div className="img-padding">
+    <img src={require("./img/datapath.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 3:</b> Datapath</p>
+</div>
+<br/>
+
+A special thing to notice is the criss-cross between the ESU and Axis Counter. The Axis Counter ensures that the ESU reads/writes values from/to the correct addresses. Once all axis addresses have been iterated through, the Axis Counter needs to wait until the next update period before counting again. The criss-cross lets the ESU tell the Axis Counter when it has finished while letting the Axis Counter control when the next calculation should begin. The effect is that new calculations begin immediately after the previous one, but only once the axis has been incremented or a new update period begins.
+
+The design also implements a subtle 3-stage pipeline. The Control Unit writes data for the *next update period* to the CL Table. The ESU calculates solutions during the *current update period*, and the PGUs use the solutions from the *previous update period* to generate their pulses.
+
+<div className="img-padding">
+    <img src={require("./img/pipeline.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 4:</b> Timing diagram of 3-stage pipeline</p>
+</div>
+<br/>
+
+This pipeline is unique in that it acts not on single instructions, but on groups of instructions. Additionally, groups of instructions propagate through the pipeline every update period, rather than every clock cycle. This design is useful because reading instructions from memory is much slower than calculating the results of the instruction, but reading every instruction for a given update period is much faster than the update period itself. Additionally, the PGUs must always generate pulses over a complete update period.
+
+### 3.2. Control Unit
+The Control Unit is depicted in Figure 5 below. The Fetch Unit fetches instructions from FIFO memory and presents this data to the Decoder. The Decoder creates the write signals for both the CL Table (in the Datapath), and the GP Table. The GP Table stores "Global Parameters" that are used by units throughout the design. Finally, the Update Generator reads the `t_up` parameter from the GP Table and generates an update pulse every `t_up` clock cycles.
+
+<div className="img-padding">
+    <img src={require("./img/control-unit.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 5:</b> T0 Core Control Unit</p>
+</div>
+
+
+
+## 4. Datapath Circuits
+This section describes in detail each circuit that comprises the Datapath.
+
+### 4.1. Axis Counter
+The Axis Counter's job is to count through the axis addresses, ensuring that the core performs the necessary calculations for each axis. The unit only increments when the `ready` port is `HIGH`, and therefore requires a one-cycle pulse from the ESU's `done` output before incrementing. Once all axis addresses have been iterated through, the unit should stop incrementing until the next update period.
+
+<div className="img-padding" style={{
+    maxWidth: "550px"
+}}>
+    <img src={require("./img/axis-counter.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 6:</b> Axis counter circuit</p>
+</div>
+<br/>
+
+Note that there are three axes addressed as `0`, `1`, and `2`, meaning the `axis` output should never exceed two. This explains the *axis &ne; 2* section in the circuit above.
+
+### 4.2. CL Table
+The CL Table implements the "Control Loop". Advanced motion controllers typically implement PID control or something similar, but this implementation attempts to be as minimalistic as possible. The axis's position is tracked internally as `p_current`, and a target position (`p_target`) can be written to the CL Table. Every update period, `velocity` is recalculated as *velocity = p_target - p_current*, and `p_current` is set to the previous `p_target` value.
+
+This register table has three rows (one for each axis). The address ports (`wa` for "write address" and `ra` for "read address") select the row to be manipulated. The `wd` ("write data") port writes a `p_target` value to the *write column*. Data is written ever rising clock edge that `we` ("write enable") is `HIGH`. The `rd` ("read data") port reads a `velocity` value from the *read column*.
+
+<div className="img-padding" style={{
+    maxWidth: "450px"
+}}>
+    <img src={require("./img/cl-table.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 7:</b> CL Table</p>
+</div>
+<br/>
+
+An annotated snippet of the SystemVerilog source is shown below for clarity. Note that this snippet omits the unit's reset logic. Please see the `src/datapath/cl_table.sv` file for the full RTL model.
+
+```verilog
+always_ff @(posedge clk) begin
+    if(update) begin
+        p_current <= p_target; // `p_current` becomes the previous `p_target`
+
+        for(int i = 0; i < 3; i++)
+            velocity[i] <= p_target[i] - p_current[i]; // Recalculate velocity
+    end
+    
+    if(we)
+        p_target[wa] <= wd; // Write target value
+end
+
+assign rd = velocity[ra]; // Combinationally read velocity
+```
+
+### 4.3. ESU
+The purpose of the ESU ("Equation Solving Unit") is to solve for the values needed for the PGUs ("Pulse Generation Units") to construct a step/direction signal. The direction signal is simply equal the sign bit of `velocity`. In other words, `dir` is `1` when `velocity` is negative. The `step` signal is slightly more involved.
+
+This architecture defines velocity as having units of *steps per update period*. For a given velocity, the number of steps to be generated in a given update period is simply the absolute value of the velocity. For the PGU to construct the step signal, it needs to know both the *on-time* (`t_on`) and the *off-time* (`t_off`) for the signal. All stepper motor drives require a minimum on-time to guarantee a successful step. Since this value is constant for each axis, it can be stored in the GP Table (discussed in a later section). The equation to solve for `t_off` is shown in Figure 8 below.
+
+<div className="img-padding" style={{
+    maxWidth: "800px"
+}}>
+    <img src={require("./img/step-waveform.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 8:</b> Step signal characteristics</p>
+</div>
+<br/>
+
+The ESU solves the equations shown above. The ESU's circuit is depicted below. The block labeled `2C` outputs the two's compliment of `velocity`. This, in conjunction with the multiplexer, takes the absolute value of `velocity` before delivering it to the divider's `b` input. The ESU uses a sequential divider to minimize the design size. It's worth noting that integer division does not typically produce an exact answer, so the PGU must be designed to consider this *remainder error*.
+
+<div className="img-padding" style={{
+    maxWidth: "800px"
+}}>
+    <img src={require("./img/esu.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 9:</b> ESU circuit</p>
+</div>
+<br/>
+
+The circuit between the divider's `done` port and the ESU's `done` port is called a *rising edge detector*. It ensures that the ESU's `done` signal is a one-cycle pulse that can be used by other units in the Datapath.
+
+### 4.4. Solution Table
+The Solution Table stores the solutions calculated by the ESU. The ESU outputs the value of both `t_off` and `dir`, which are stores in column 0 and column 1 respectively. These columns are accessed through the `wd0` and `wd1` ports (where `wd` stands for "write data"). The row that these solutions are written to is controlled by the `wa` ("write address") port. Data is written ever rising clock edge that `we` ("write enable") is `HIGH`.
+
+The values of each column are outputted as a bus: `rd0[0:2]` for column 0 and `rd1[0:2]` for column 1. This makes it easy to route the values stored in the table to the correct PGU, where each PGU requires the values from a single row of the Solution Table.
+
+<div className="img-padding" style={{
+    maxWidth: "400px"
+}}>
+    <img src={require("./img/solution-table.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 10:</b> Solution Table</p>
+</div>
+
+
+### 4.5. PGU
+The Pulse Generation Unit (PGU) is responsible for generating step and direction signals. An example step signal is shown in Figure 11 below. Notice that the signal is `LOW` at the beginning of the update period. This ensures that, provided the axis's maximum velocity is not exceeded, the step signal cannot violate the stepper motor drive's setup time requirements. Also notice that the signal is `HIGH` at the end of the update period. If there is a large remainder error (as discussed in Section 4.3), then the signal will again go `LOW` before the next update period; however, this remainder error can never exceed the `t_off` value, meaning no additional (erroneous) step pulse will ever be generated.
+
+<div className="img-padding" style={{
+    maxWidth: "450px"
+}}>
+    <img src={require("./img/step-waveform-simple.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 11:</b> Step signal</p>
+</div>
+<br/>
+
+The generation of this step signal can be modeled with a very simple state machine (depicted in Figure 12). The state machine starts `LOW`, then becomes `HIGH` after `t_off` clock cycles. The signal remains `HIGH` for `t_on` clock cycles before returning `LOW`. The cycle repeats for an entire update period. When an `update` pulse is received, the machine forces the step signal `LOW` and resets the counter.
+
+<div className="img-padding" style={{
+    maxWidth: "500px"
+}}>
+    <img src={require("./img/pgu-fsm.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 12:</b> Step generator state machine</p>
+</div>
+<br/>
+
+A simplified schematic of this machine is shown in Figure 13. Notice that the states themselves control the resetting of the counter circuitry. Since the state values are one bit wide, an XOR gate is sufficient to determine when the current state (`E_state`) is different from the next state (`E_next_state`), indicating that the state has transitioned. This transition resets the counter. Also notice that the counter resets to a value of `1`. This was done to prevent the need for subtractors in the "next state logic". The complete synthesized circuit is shown in Figure 14.
+
+<div className="img-padding" style={{
+    maxWidth: "800px"
+}}>
+    <img src={require("./img/pgu-simple.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 13:</b> Step generator circuit (simplified)</p>
+</div>
+<br/>
+
+<div className="img-padding">
+    <img src={require("./img/pgu-detailed.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 14:</b> Step generator circuit (complete)</p>
+</div>
+<br/>
+
+The D flip-flops buffering the `dir_in`, `t_on`, and `t_off` signals (shown in Figure 14) ensure that these values are constant for the entirety of an update period. New values are shifted in at the beginning of each update period.
+
+## 5. Control Unit Circuits
+This section describes in detail each circuit that comprises the Control Unit. 
+
+### 5.1. Fetch Unit
+The Fetch Unit's design can best be explained using flowcharts. The notation used is depicted in Figure 15.
+
+<div className="img-padding" style={{
+    maxWidth: "250px"
+}}>
+    <img src={require("./img/flowchart-symbols.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 15:</b> Flowchart symbols</p>
+</div>
+<br/>
+
+The Fetch Unit's task is to fetch instructions from FIFO memory. If it receives a set-type instruction, then it needs to fetch the four additional bytes that comprise the payload. If it receives an update instruction (opcode = 0), then the Fetch Unit needs to wait until the next update period to begin fetching another group of instructions. This process is depicted in Figure 16.
+
+<div className="img-padding" style={{
+    maxWidth: "600px"
+}}>
+    <img src={require("./img/fetch-unit-process.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 16:</b> Fetcn Unit process</p>
+</div>
+<br/>
+
+The process described above can be implemented with conditional logic as shown in Figure 17. The cycle repeats itself on the rising edge of every `data_ready` signal (i.e., every time `data_ready_posedge` is `HIGH`). Also note that `wait_flag` and `done` are reset to `0` every update period.
+
+<div className="img-padding" style={{
+    maxWidth: "800px"
+}}>
+    <img src={require("./img/fetch-unit-implementation.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 17:</b> Fetcn Unit conditional logic</p>
+</div>
+<br/>
+
+The rising edge of `data_ready` is detected using a rising edge detector like shown below.
+
+<div className="img-padding" style={{
+    maxWidth: "500px"
+}}>
+    <img src={require("./img/edge-detector.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 18:</b> Rising edge detector</p>
+</div>
+<br/>
+
+### 5.2. Decoder
+The Decoder decodes the instructions delivered by the Fetch Unit in order to write data to either the GP Table (discussed in a later section) or the CL Table (in the Datapath). Its implementation can best be articulated with the SystemVerilog itself:
+
+```verilog
+always_comb begin
+    cl_we = en & instr[6] & instr[4];
+    gp_we = en & instr[6] & instr[5];
+    wa = instr[3:0];
+    wd = payload;
+end
+```
+
+This synthesizes into the following circuit:
+
+<div className="img-padding" style={{
+    maxWidth: "500px"
+}}>
+    <img src={require("./img/decoder.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 19:</b> Decoder circuit</p>
+</div>
+<br/>
+
+
+### 5.3. GP Table
+The GP Table stores the "Global Parameters" used by various parts of the core. The `we`, `wa`, and `wd` ports stand for "write enable", "write address", and "write data" respectively. The columns shown in Figure 20 represent addresses `0` through `3` from top to bottom (i.e., `t_up` has an address of `0`, `t_on[0]` has an address of `1`, etc.). All values are outputted in the form of a bus (`rd[0:3]`).
+
+<div className="img-padding" style={{
+    maxWidth: "300px"
+}}>
+    <img src={require("./img/gp-table.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 20:</b> GP Table</p>
+</div>
+<br/>
+
+### 5.4. Update Generator
+The Update Generator is a simple counter that resets once it reaches (or exceeds) the value of `t_up`. The counter's value can potentially exceed the value of `t_up` in the case where `t_up`'s value is decreased in the middle of an update period. This is why the <code>&ge;</code> block is needed.
+
+<div className="img-padding" style={{
+    maxWidth: "600px"
+}}>
+    <img src={require("./img/update-generator.png").default}/>
+</div>
+<div style={{textAlign: "center"}}>
+    <p><b>Figure 21:</b> Update Generator</p>
+</div>
+<br/>
