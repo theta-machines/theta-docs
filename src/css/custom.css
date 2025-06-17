@@ -1,0 +1,90 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #ea4d00;
+  --ifm-color-primary-dark: #d34500;
+  --ifm-color-primary-darker: #c74100;
+  --ifm-color-primary-darkest: #a43600;
+  --ifm-color-primary-light: #ff5602;
+  --ifm-color-primary-lighter: #ff5d0e;
+  --ifm-color-primary-lightest: #ff7531;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme="dark"] {
+  --ifm-color-primary: #ff5e14;
+  --ifm-color-primary-dark: #f84e00;
+  --ifm-color-primary-darker: #ea4a00;
+  --ifm-color-primary-darkest: #c13d00;
+  --ifm-color-primary-light: #ff7130;
+  --ifm-color-primary-lighter: #ff7a3d;
+  --ifm-color-primary-lightest: #ff9766;
+  --ifm-background-color: #242424;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+
+  background-color: #242424;
+}
+
+
+
+/* GitHub Link Icon */
+.header-github-link::before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  display: flex;
+  background: url("../../static/img/icons/github-icon.svg") no-repeat;
+}
+
+[data-theme="dark"] .header-github-link::before {
+  background: url("../../static/img/icons/github-icon-white.svg") no-repeat;
+}
+
+.header-github-link {
+  width: 32px;
+  padding: 0.25rem;
+  margin-right: 0.25rem;
+  border-radius: 50%;
+}
+
+.header-github-link:hover {
+  background-color: var(--ifm-color-emphasis-200);
+}
+
+/* GitHub Icon Mobile */
+.navbar-sidebar .header-github-link {
+  margin-left: 0.5rem;
+}
+
+
+
+/* Set header/footer color */
+[data-theme="dark"] nav.navbar, [data-theme="dark"] footer.footer {
+  background-color: #202020;
+}
+
+[data-theme="light"] footer.footer {
+  background-color: #303030;
+}
+
+
+
+/* Prevent "Theta Docs" from highlighting */
+.navbar__brand:hover {
+  color: unset;
+}
+
+
+
+/* Re-style breadcrumbs */
+ul.breadcrumbs span, ul.breadcrumbs a {
+  background: unset !important;
+  padding: 0px;
+}
