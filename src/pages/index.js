@@ -1,8 +1,6 @@
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Layout from "@theme/Layout";
 
-import UnderConstruction from "../../static/img/under_construction.svg";
-
 export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
@@ -22,7 +20,12 @@ export default function Home() {
         minHeight: "60vh",
         padding: "50px",
       }}>
-        <UnderConstruction width="80%" style={{maxWidth: "1000px"}}/>
+        <img src="/img/under_construction.png" alt="Under Construction" 
+          style={{
+            width: "100%",
+            maxWidth: "1000px"
+          }}
+        />
       </div>
     </Layout>
   );
