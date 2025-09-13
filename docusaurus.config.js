@@ -46,7 +46,9 @@ const config = {
       'classic',
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
-        docs: false,
+        docs: {
+          routeBasePath: "/"
+        },
         blog: false,
         theme: {
           customCss: './src/css/custom.css',
