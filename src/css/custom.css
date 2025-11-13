@@ -2,9 +2,12 @@
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
  * work well for content-centric websites.
+ *
+ * Color palette generated with the tool found here:
+ * https://docusaurus.io/docs/styling-layout#styling-your-site-with-infima
  */
 
-/* You can override the default Infima variables here. */
+/* Color palette */
 :root {
   --ifm-color-primary: #ea4d00;
   --ifm-color-primary-dark: #d34500;
@@ -17,7 +20,9 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+
+
+/* Dark theme color palette */
 [data-theme="dark"] {
   --ifm-color-primary: #ff5e14;
   --ifm-color-primary-dark: #f84e00;
@@ -87,4 +92,31 @@
 ul.breadcrumbs span, ul.breadcrumbs a {
   background: unset !important;
   padding: 0px;
+}
+
+
+
+/* Center Images */
+.img-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px solid black;
+  max-width: 100%;
+}
+
+.img-padding {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 30px;
+  background-color: white;
+  border: 2px solid black;
+}
+
+.img-padding > img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
 }

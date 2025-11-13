@@ -1,0 +1,93 @@
+---
+title: "iCEcube2 Guide"
+---
+
+This guide quickly shows you how to synthesize a design and generate a bitmap using iCEcube2. For more detailed information, see the official [*iCEcube2 User Guide*](https://www.latticesemi.com/view_document?document_id=53168) published by Lattice Semiconductor.
+
+## Installation
+1. Download iCEcube2 and obtain a free license from https://www.latticesemi.com/iCEcube2.
+2. Save the `license.dat` file somewhere safe (such as `C:/lscc/license/` on Windows). You'll need this file in the next step.
+3. Finally, install iCEcube2.
+
+## Folder Structure
+You can organize your files in any way that makes sense for your project. It's good practice, however, to keep your source files independent from your vendor's tool files. This makes it easier to migrate your designs should you ever change vendors.
+
+For most of our projects, we use a folder structure similar to the one shown below:
+
+```
+my-project/
+├── icecube2/
+├── src/
+└── sim/
+```
+
+:::note
+The `icecube2` directory will be created in the next section.
+:::
+
+## Download the Project (Optional)
+This guide uses a project called `my-project` which contains a single source file (`my-project/src/top.sv`) that makes an LED blink once per second.
+
+If you would like to follow this guide verbatim, you can download and extract the [eth4k-demo-guide.zip](https://www.thetamachines.com/downloads/hardware/eth4k-demo-guide.zip) file.
+
+## Creating a New Project
+1. Launch iCEcube2.
+2. In the top left corner, click `File > New Project`.
+3. Set `Project Name` to something like `icecube2`.
+4. Set `Project Directory` to your project's root directory.
+5. Set `Device Family` to `iCE40`.
+6. Set `Device` to `HX4K`.
+7. Set `Device Package` to `TQ144`.
+8. Under `Junction Temperature`, set `Range` to `Industrial`.
+9. Set all four options under `IOBank Voltage(V)` to `3.3`
+10. Click `Next`.
+
+<img
+  src={require("./img/icecube2-new-project.png").default}
+  className="img-center"
+  width="350px"
+/>
+
+<br/>
+
+11. Add the files from your `src` directory using the `>>` button. You only need to select the files that will be used for synthesis.
+
+<img
+  src={require("./img/icecube2-add-files.png").default}
+  className="img-center"
+  width="750px"
+/>
+
+<br/>
+
+12. Click `Finish`.
+
+## Synthesizing Your Design
+
+1. Double-click the <code><img src={require("./img/icecube2-action-button.png").default}/> Run Synplify Pro Synthesis</code> option to begin synthesis. 
+2. Review the output for any warnings and errors. If all goes well, the output will read `Synthesis succeeded` near the end. 
+3. Double-click <code><img src={require("./img/icecube2-action-button.png").default}/> Import P&R Input Files</code>.
+4. Open the `Pins Constraints Editor` (<img src={require("./img/icecube2-pin-constraint-button.png").default} width="20px"/>) and enter the pin numbers.
+    * This editor can also be opened by clicking `Tool > Pins Constraints Editor`.
+
+<img
+  src={require("./img/icecube2-pin-constraint-table.png").default}
+  className="img-center"
+  width="750px"
+/>
+
+<br/>
+
+5. After entering the pin information, save the constraints (ctrl+s). If asked if you want to overrite the existing constraints file, click `Yes`. 
+6. Double-click <code><img src={require("./img/icecube2-action-button.png").default}/> Run Placer</code>.
+7. Double-click <code><img src={require("./img/icecube2-action-button.png").default}/> Run Router</code>.
+8. Double-click <code><img src={require("./img/icecube2-action-button.png").default}/> Generate Bitmap</code>.
+9. Navigate to `Output Files > Bitmap > <filename>_bitmap.bin`. Right click on it, and click `Open File Location`.
+10. This is the bitmap that you'll flash onto the FPGA, so either take note of this directory or copy the `.bin` file somewhere safe.
+
+:::tip
+By default, the bitmap files are stored in `my-project/icecube2/icecube2_Implmnt/sbt/outputs/bitmap/`.
+:::
+
+## Next Steps
+Now that you have successfully generated a bitmap, you need to flash this bitmap onto the FPGA. Our [*Diamond Programmer Guide*](/hardware/disco-boards/eth4k/diamond-programmer-guide) will walk you through this process.

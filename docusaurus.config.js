@@ -47,7 +47,10 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          routeBasePath: "/"
+          sidebarPath: require.resolve("./sidebars.js"),
+          routeBasePath: "/",
+          // GitHub repo URL
+          editUrl: "https://github.com/theta-machines/theta-docs",
         },
         blog: false,
         theme: {
@@ -72,6 +75,12 @@ const config = {
           src: 'img/logo.svg',
         },
         items: [
+          {
+            type: "docSidebar",
+            sidebarId: "hardwareSidebar",
+            position: "left",
+            label: "Hardware",
+          },
           {
             href: "https://www.thetamachines.com",
             label: "Theta Machines",

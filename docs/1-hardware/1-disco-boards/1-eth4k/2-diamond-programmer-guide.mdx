@@ -1,0 +1,74 @@
+---
+title: "Diamond Programmer Guide"
+---
+
+This guide explains how to flash a single bitmap onto the ETH4K using Diamond Programmer.
+
+## Installation
+:::caution
+This guide uses the standalone Diamond Programmer, not Lattice Diamond.
+:::
+
+1. Download the `Programmer Standalone` package from https://www.latticesemi.com/latticediamond.
+2. Run the installer.
+
+## Download the Project (Optional)
+This guide assumes that you have already generated a bitmap for the ETH4K. If you would like to use the same bitmap as this guide, you can download and extract the [eth4k-demo-guide.zip](https://www.thetamachines.com/downloads/hardware/eth4k-demo-guide.zip) file.
+
+After extracting this .zip file, you will find a bitmap file named `top_bitmap.bin` in the `my-project` directory. This bitmap makes LED1 blink once per second.
+
+## Programming the ETH4K
+
+:::tip
+We provide a Diamond Programmer project file called `eth4k-boilerplate.xcf` which already contains the ETH4K configuration. We recommend cloning this file whenever creating a new Diamond Programmer project.
+:::
+
+1. Download `eth4k-boilerplate.xcf.zip` from https://www.thetamachines.com/downloads/hardware/eth4k-boilerplate.xcf.zip.
+2. Extract the zip file to obtain the `eth4k-boilerplate.xcf` file.
+3. Launch Diamond Programmer.
+4. In the `Getting Started` window, select `Open an existing programmer project`, choose the `eth4k-boilerplate.xcf` file, and click `OK`.
+
+<img
+  src={require("./img/diamond-programmer-open-project.png").default}
+  className="img-center"
+/>
+
+<br/>
+
+5. Under `File Name`, select the bitmap you wish to program the FPGA with. In this example, we're using `top_bitmap.bin`.
+
+<img
+  src={require("./img/diamond-programmer-file-name.png").default}
+  className="img-center"
+/>
+
+<br/>
+
+6. Make sure the ETH4K is plugged into your computer.
+7. Click the `Detect Cable` button under `Cable Settings`.
+
+<img
+  src={require("./img/diamond-programmer-detect-cable.png").default}
+  className="img-center"
+/>
+
+<br/>
+
+8. Select the option that says `ETH4K A` and click `OK`.
+
+<img
+  src={require("./img/diamond-programmer-select-cable.png").default}
+  className="img-center"
+/>
+
+<br/>
+
+9. Finally program the device by clicking the program button (<img src={require("./img/diamond-programmer-program-button.png").default}/>) in the top toolbar.
+    * You can also click `Design > Program`.
+10. If all goes well, the output terminal will print `Operation: successful`. Your device is now programmed.
+
+## Saving the Programmer Project
+The `eth4k-boilerplate.xcf` file is only a starting point for your projects. For that reason, it's good practice to save your own `.xcf` file for each project.
+
+1. In Diamond Programmer, Click `File > Save [file-name.xcf] As...`
+2. Save the file in your project's root directory, naming it something like `programming-config.xcf`.
